@@ -27,9 +27,9 @@ export const useBoard = () => {
     return newBoard;
   };
 
-  const addStone = (board: Board, position: Position, stone: Stone): Board => {
+  const addStones = (board: Board, position: Position, stones: Stone[]): Board => {
     const updatedBoard = cloneDeep(board);
-    updatedBoard[position.y][position.x] = [stone];
+    updatedBoard[position.y][position.x] = stones;
 
     return updatedBoard;
   };
@@ -48,20 +48,23 @@ export const useBoard = () => {
       throw Error('FIELD_ALREADY_OCCUPIED');
     }
 
-    return addStone(board, position, stone);
+    return addStones(board, position, [stone]);
   };
 
-  const removeStone = (board: Board, position: Position, index = 0) => {
-    if (!board[position.y][position.x]) {
+  const removeStones = (board: Board, position: Position, amount = 1) => {
+    if (board[position.y][position.x].length === 0) {
       throw new Error('CANT_REMOVE_EMPTY_FIELD');
     }
     const tempBoard = cloneDeep(board);
-    const [stone] = tempBoard[position.y][position.x] as Stone[];
-    tempBoard[position.y][position.x] = [];
+    const stones = tempBoard[position.y][position.x] as Stone[];
+
+    const divideIndex = stones.length - amount;
+    const removedStones = stones.slice(divideIndex, stones.length);
+    tempBoard[position.y][position.x] = stones.slice(0, divideIndex);
 
     return {
       board: tempBoard,
-      stone,
+      removedStones,
     };
   };
 
@@ -72,22 +75,22 @@ export const useBoard = () => {
     return !(distanceX + distanceY > 1);
   };
 
-  const moveStone = (board: Board, from: Position, to: Position, index = 0) => {
+  const moveStones = (board: Board, from: Position, to: Position, amount = 1) => {
     if (board[from.y][from.x].length === 0) {
       throw new Error('CANT_MOVE_FROM_EMPTY');
     }
     if (!isAllowedDistance(from, to)) {
       throw new Error('MAX_ONE_STEP');
     }
-    const { board: boardWithoutFrom, stone } = removeStone(board, from);
-    const boardAfterMove = addStone(boardWithoutFrom, to, stone);
+    const { board: boardWithoutFrom, removedStones } = removeStones(board, from, amount);
+    const boardAfterMove = addStones(boardWithoutFrom, to, removedStones);
 
     return boardAfterMove;
   };
 
   return {
     createBoard,
-    moveStone,
+    moveStones,
     placeNewStone,
   };
 };
