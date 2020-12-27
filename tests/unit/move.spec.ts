@@ -10,11 +10,11 @@ describe('Stone Movement Logic', () => {
     const boardAfterMove = moveStone(updatedBoard, { x: 0, y: 0 }, { x: 0, y: 1 });
 
     const expectedBoard: Board = [
-      [undefined, undefined, undefined, undefined, undefined],
-      [[newStone], undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
+      [[], [], [], [], []],
+      [[newStone], [], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
     ];
     expect(expectedBoard).toEqual(boardAfterMove);
   });
@@ -28,11 +28,11 @@ describe('Stone Movement Logic', () => {
     const boardAfterMove = moveStone(updatedBoard, { x: 1, y: 1 }, { x: 1, y: 0 });
 
     const expectedBoard: Board = [
-      [undefined, [newStone], undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
+      [[], [newStone], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
     ];
     expect(expectedBoard).toEqual(boardAfterMove);
   });
@@ -47,5 +47,45 @@ describe('Stone Movement Logic', () => {
     expect(() => moveStone(updatedBoard, { x: 1, y: 1 }, { x: 1, y: 3 })).toThrow();
     expect(() => moveStone(updatedBoard, { x: 1, y: 1 }, { x: 0, y: 1 })).not.toThrow();
     expect(() => moveStone(updatedBoard, { x: 1, y: 1 }, { x: 1, y: 2 })).not.toThrow();
+  });
+
+  it('moves a stack correctly', () => {
+    const { createBoard, moveStone } = useBoard();
+    const board = createBoard();
+    const testStack: Stone[] = [
+      { player: 1, type: 'FLAT' },
+      { player: 2, type: 'FLAT' },
+      { player: 1, type: 'FLAT' },
+      { player: 2, type: 'FLAT' },
+      { player: 1, type: 'FLAT' },
+      { player: 1, type: 'FLAT' },
+      { player: 2, type: 'FLAT' },
+      { player: 1, type: 'FLAT' },
+    ];
+    board[0][0] = testStack;
+
+    const boardAfterMove = moveStone(board, { x: 0, y: 0 }, { x: 0, y: 1 }, 3);
+    const stonesMoved: Stone[] = [
+      { player: 1, type: 'FLAT' },
+      { player: 2, type: 'FLAT' },
+      { player: 1, type: 'FLAT' },
+    ];
+    const stonesLeft: Stone[] = [
+      { player: 1, type: 'FLAT' },
+      { player: 2, type: 'FLAT' },
+      { player: 1, type: 'FLAT' },
+      { player: 2, type: 'FLAT' },
+      { player: 1, type: 'FLAT' },
+    ];
+
+    const expectedBoard: Board = [
+      [stonesLeft, [], [], [], []],
+      [stonesMoved, [], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
+    ];
+    console.log('boardAfterMove', boardAfterMove);
+    expect(expectedBoard).toEqual(boardAfterMove);
   });
 });

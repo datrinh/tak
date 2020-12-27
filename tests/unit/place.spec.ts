@@ -9,11 +9,11 @@ describe('Stone Placement Logic', () => {
     const updatedBoard = placeNewStone(emptyBoard, { x: 0, y: 0 }, newStone);
 
     const expectedBoard: Board = [
-      [[newStone], undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
+      [[newStone], [], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
     ];
     expect(expectedBoard).toEqual(updatedBoard);
   });
@@ -26,11 +26,11 @@ describe('Stone Placement Logic', () => {
     const updatedBoard = placeNewStone(emptyBoard, { x: 1, y: 2 }, newStone);
 
     const expectedBoard: Board = [
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, [newStone], undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
+      [[], [newStone], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
     ];
     expect(expectedBoard).toEqual(updatedBoard);
   });
@@ -43,11 +43,11 @@ describe('Stone Placement Logic', () => {
     const updatedBoard = placeNewStone(emptyBoard, { x: 4, y: 2 }, newStone);
 
     const expectedBoard: Board = [
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, [newStone]],
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], [newStone]],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
     ];
     expect(expectedBoard).toEqual(updatedBoard);
   });

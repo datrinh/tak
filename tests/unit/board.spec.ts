@@ -5,11 +5,11 @@ describe('Board Creation Logic', () => {
     const { createBoard } = useBoard();
     const emptyBoard = createBoard();
     const expectedDefaultBoard = [
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined, undefined],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
     ];
 
     expect(emptyBoard).toEqual(expectedDefaultBoard);
@@ -19,9 +19,9 @@ describe('Board Creation Logic', () => {
     const { createBoard } = useBoard();
     const emptyBoard = createBoard(3, 3);
     const expectedBoard = [
-      [undefined, undefined, undefined],
-      [undefined, undefined, undefined],
-      [undefined, undefined, undefined],
+      [[], [], []],
+      [[], [], []],
+      [[], [], []],
     ];
 
     expect(emptyBoard).toEqual(expectedBoard);
@@ -31,10 +31,10 @@ describe('Board Creation Logic', () => {
     const { createBoard } = useBoard();
     const emptyBoard = createBoard(4, 4);
     const expectedBoard = [
-      [undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined],
-      [undefined, undefined, undefined, undefined],
+      [[], [], [], []],
+      [[], [], [], []],
+      [[], [], [], []],
+      [[], [], [], []],
     ];
 
     expect(emptyBoard).toEqual(expectedBoard);

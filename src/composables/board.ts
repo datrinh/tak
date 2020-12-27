@@ -7,7 +7,7 @@ export interface Stone {
   type: StoneType;
 }
 
-export type Board = (Stone[]|undefined)[][]
+export type Board = Stone[][][]
 
 interface Position {
   x: number;
@@ -16,7 +16,7 @@ interface Position {
 
 const ROW_COUNT = 5;
 const COL_COUNT = 5;
-const EMPTY_FIELD = undefined;
+const EMPTY_FIELD: Stone[] = [];
 
 export const useBoard = () => {
   const createBoard = (rowCount = ROW_COUNT, colCount = COL_COUNT): Board => {
@@ -44,7 +44,7 @@ export const useBoard = () => {
     if (!isPositionValid(board, position)) {
       throw Error('POSITION_OUTSIDE_BOUNDARY');
     }
-    if (board[position.y][position.x]) {
+    if (board[position.y][position.x].length > 0) {
       throw Error('FIELD_ALREADY_OCCUPIED');
     }
 
@@ -57,7 +57,7 @@ export const useBoard = () => {
     }
     const tempBoard = cloneDeep(board);
     const [stone] = tempBoard[position.y][position.x] as Stone[];
-    tempBoard[position.y][position.x] = undefined;
+    tempBoard[position.y][position.x] = [];
 
     return {
       board: tempBoard,
@@ -73,7 +73,7 @@ export const useBoard = () => {
   };
 
   const moveStone = (board: Board, from: Position, to: Position, index = 0) => {
-    if (!board[from.y][from.x]) {
+    if (board[from.y][from.x].length === 0) {
       throw new Error('CANT_MOVE_FROM_EMPTY');
     }
     if (!isAllowedDistance(from, to)) {
