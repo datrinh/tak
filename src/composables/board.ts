@@ -1,4 +1,5 @@
-import { clone, cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash';
+import { ref } from 'vue';
 
 type StoneType = 'STANDING' | 'FLAT' | 'CAP'
 
@@ -14,12 +15,14 @@ interface Position {
   y: number;
 }
 
-const ROW_COUNT = 5;
-const COL_COUNT = 5;
+const DEFAULT_ROWS = 5;
+const DEFAULT_COLS = 5;
 const EMPTY_FIELD: Stone[] = [];
 
 export const useBoard = () => {
-  const createBoard = (rowCount = ROW_COUNT, colCount = COL_COUNT): Board => {
+  const activePlayer = ref(1);
+
+  const createBoard = (rowCount = DEFAULT_ROWS, colCount = DEFAULT_COLS): Board => {
     const newBoard = [];
     for (let x = 0; x < rowCount; x += 1) {
       newBoard.push(new Array(colCount).fill(EMPTY_FIELD));
@@ -27,18 +30,18 @@ export const useBoard = () => {
     return newBoard;
   };
 
-  const addStones = (board: Board, position: Position, stones: Stone[]): Board => {
+  const addStones = (board: Board, pos: Position, stones: Stone[]): Board => {
     const updatedBoard = cloneDeep(board);
-    updatedBoard[position.y][position.x] = [
-      ...updatedBoard[position.y][position.x],
+    updatedBoard[pos.y][pos.x] = [
+      ...updatedBoard[pos.y][pos.x],
       ...stones,
     ];
     return updatedBoard;
   };
 
-  const isPositionValid = (board: Board, position: Position) => {
-    const isInsideBoundaries = position.y <= board.length && position.x <= board.length;
-    const isPositionPositive = position.y >= 0 && position.x >= 0;
+  const isPositionValid = (board: Board, pos: Position) => {
+    const isInsideBoundaries = pos.y <= board.length && pos.x <= board.length;
+    const isPositionPositive = pos.y >= 0 && pos.x >= 0;
     return isInsideBoundaries && isPositionPositive;
   };
 
@@ -48,15 +51,20 @@ export const useBoard = () => {
     board: Board, pos: Position,
   ) => board[pos.y][pos.x][board[pos.y][pos.x].length - 1];
 
-  const placeNewStone = (board: Board, position: Position, stone: Stone): Board => {
-    if (!isPositionValid(board, position)) {
+  const switchPlayer = (player: number) => (player === 1 ? 2 : 1);
+
+  const placeNewStone = (board: Board, pos: Position, type: StoneType): Board => {
+    if (!isPositionValid(board, pos)) {
       throw Error('POSITION_OUTSIDE_BOUNDARY');
     }
-    if (board[position.y][position.x].length > 0) {
+    if (board[pos.y][pos.x].length > 0) {
       throw Error('FIELD_ALREADY_OCCUPIED');
     }
 
-    return addStones(board, position, [stone]);
+    const newBoard = addStones(board, pos, [{ type, player: activePlayer.value }]);
+    activePlayer.value = switchPlayer(activePlayer.value);
+
+    return newBoard;
   };
 
   const removeStones = (board: Board, pos: Position, amount = 1) => {
@@ -83,7 +91,7 @@ export const useBoard = () => {
     return !(distanceX + distanceY > 1);
   };
 
-  const isAllowedByType = (board: Board, from: Position, to: Position) => {
+  const isAllowedByType = (board: Board, from: Position, to: Position, amount: number) => {
     if (isFieldEmpty(board, to)) {
       return true;
     }
@@ -95,7 +103,7 @@ export const useBoard = () => {
       return false;
     }
     if (toType === 'STANDING') {
-      return getTopStone(board, from).type === 'CAP';
+      return getTopStone(board, from).type === 'CAP' && amount === 1;
     }
     return false;
   };
@@ -121,7 +129,7 @@ export const useBoard = () => {
     if (!isAllowedByDistance(from, to)) {
       throw new Error('MAX_ONE_STEP');
     }
-    if (!isAllowedByType(board, from, to)) {
+    if (!isAllowedByType(board, from, to, amount)) {
       throw new Error('CANNOT_FLATTEN');
     }
     let tempBoard = cloneDeep(board);
@@ -133,10 +141,13 @@ export const useBoard = () => {
 
     tempBoard = addStones(tempBoard, to, removedStones);
 
+    activePlayer.value = switchPlayer(activePlayer.value);
+
     return tempBoard;
   };
 
   return {
+    activePlayer,
     createBoard,
     moveStones,
     placeNewStone,

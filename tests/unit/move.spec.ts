@@ -139,12 +139,12 @@ describe('Stone Movement Logic', () => {
       { player: 2, type: 'FLAT' },
       { player: 1, type: 'STANDING' },
     ];
-    const capStoneFile: Stone[] = [
+    const capStoneField: Stone[] = [
       { player: 1, type: 'FLAT' },
       { player: 2, type: 'CAP' },
     ];
     emptyBoard[0][0] = testField;
-    emptyBoard[0][1] = capStoneFile;
+    emptyBoard[0][1] = capStoneField;
 
     const newBoard = moveStones(emptyBoard, { x: 1, y: 0 }, { x: 0, y: 0 });
 
@@ -161,5 +161,24 @@ describe('Stone Movement Logic', () => {
       [[], [], [], [], []],
     ];
     expect(newBoard).toEqual(expectedBoard);
+  });
+
+  it('cannot flatten with cap when moving stack', () => {
+    const { createBoard, moveStones } = useBoard();
+    const emptyBoard = createBoard();
+    const testField: Stone[] = [
+      { player: 2, type: 'FLAT' },
+      { player: 1, type: 'STANDING' },
+    ];
+    const capStoneField: Stone[] = [
+      { player: 1, type: 'FLAT' },
+      { player: 2, type: 'FLAT' },
+      { player: 1, type: 'FLAT' },
+      { player: 2, type: 'CAP' },
+    ];
+    emptyBoard[0][0] = testField;
+    emptyBoard[0][1] = capStoneField;
+
+    expect(() => moveStones(emptyBoard, { x: 1, y: 0 }, { x: 0, y: 0 }, 3)).toThrow();
   });
 });

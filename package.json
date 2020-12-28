@@ -15,6 +15,7 @@
     "vue-router": "^4.0.0-0"
   },
   "devDependencies": {
+    "@tailwindcss/postcss7-compat": "^2.0.2",
     "@types/jest": "^24.0.19",
     "@types/lodash": "^4.14.166",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
@@ -29,9 +30,12 @@
     "@vue/eslint-config-airbnb": "^5.0.2",
     "@vue/eslint-config-typescript": "^5.0.2",
     "@vue/test-utils": "^2.0.0-0",
+    "autoprefixer": "^9",
     "eslint": "^6.7.2",
     "eslint-plugin-import": "^2.20.2",
     "eslint-plugin-vue": "^7.0.0-0",
+    "postcss": "^7",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat",
     "typescript": "~3.9.3",
     "vue-jest": "^5.0.0-0"
   }
