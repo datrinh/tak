@@ -5,7 +5,7 @@ describe('Stone Movement Logic', () => {
     const { createBoard, placeNewStone, moveStones } = useBoard();
     const emptyBoard = createBoard();
     const newStone: Stone = { player: 1, type: 'CAP' };
-    const updatedBoard = placeNewStone(emptyBoard, { x: 0, y: 0 }, newStone);
+    const updatedBoard = placeNewStone(emptyBoard, { x: 0, y: 0 }, newStone.type);
 
     const boardAfterMove = moveStones(updatedBoard, { x: 0, y: 0 }, { x: 0, y: 1 });
 
@@ -23,7 +23,7 @@ describe('Stone Movement Logic', () => {
     const { createBoard, placeNewStone, moveStones } = useBoard();
     const emptyBoard = createBoard();
     const newStone: Stone = { player: 1, type: 'CAP' };
-    const updatedBoard = placeNewStone(emptyBoard, { x: 1, y: 1 }, newStone);
+    const updatedBoard = placeNewStone(emptyBoard, { x: 1, y: 1 }, newStone.type);
 
     const boardAfterMove = moveStones(updatedBoard, { x: 1, y: 1 }, { x: 1, y: 0 });
 
@@ -41,7 +41,7 @@ describe('Stone Movement Logic', () => {
     const { createBoard, placeNewStone, moveStones } = useBoard();
     const emptyBoard = createBoard();
     const newStone: Stone = { player: 1, type: 'CAP' };
-    const updatedBoard = placeNewStone(emptyBoard, { x: 1, y: 1 }, newStone);
+    const updatedBoard = placeNewStone(emptyBoard, { x: 1, y: 1 }, newStone.type);
 
     expect(() => moveStones(updatedBoard, { x: 1, y: 1 }, { x: 2, y: 2 })).toThrow();
     expect(() => moveStones(updatedBoard, { x: 1, y: 1 }, { x: 1, y: 3 })).toThrow();
@@ -180,5 +180,21 @@ describe('Stone Movement Logic', () => {
     emptyBoard[0][1] = capStoneField;
 
     expect(() => moveStones(emptyBoard, { x: 1, y: 0 }, { x: 0, y: 0 }, 3)).toThrow();
+  });
+
+  it('switches players after moving stones', () => {
+    const {
+      createBoard, moveStones, placeNewStone, activePlayer,
+    } = useBoard();
+    let board = createBoard();
+    board = placeNewStone(board, { x: 0, y: 0 }, 'FLAT');
+    board = placeNewStone(board, { x: 1, y: 0 }, 'FLAT');
+    expect(activePlayer.value).toBe(1);
+
+    board = moveStones(board, { x: 0, y: 0 }, { x: 0, y: 1 });
+    expect(activePlayer.value).toBe(2);
+
+    board = moveStones(board, { x: 1, y: 0 }, { x: 1, y: 1 });
+    expect(activePlayer.value).toBe(1);
   });
 });

@@ -72,4 +72,24 @@ describe('Stone Placement Logic', () => {
     expect(() => placeNewStone(emptyBoard, { x: 0, y: -1 }, newStone.type)).toThrow();
     expect(() => placeNewStone(emptyBoard, { x: 6, y: 2 }, newStone.type)).toThrow();
   });
+
+  it('switches players after placing a new stone', () => {
+    const {
+      createBoard, placeNewStone, getTopStone, activePlayer,
+    } = useBoard();
+    let board = createBoard();
+    expect(activePlayer.value).toBe(1);
+
+    board = placeNewStone(board, { x: 0, y: 0 }, 'FLAT');
+    expect(getTopStone(board, { x: 0, y: 0 }).player).toBe(1);
+    expect(activePlayer.value).toBe(2);
+
+    board = placeNewStone(board, { x: 1, y: 0 }, 'FLAT');
+    expect(getTopStone(board, { x: 1, y: 0 }).player).toBe(2);
+    expect(activePlayer.value).toBe(1);
+
+    board = placeNewStone(board, { x: 2, y: 0 }, 'FLAT');
+    expect(getTopStone(board, { x: 2, y: 0 }).player).toBe(1);
+    expect(activePlayer.value).toBe(2);
+  });
 });

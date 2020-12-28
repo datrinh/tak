@@ -151,5 +151,6 @@ export const useBoard = () => {
     createBoard,
     moveStones,
     placeNewStone,
+    getTopStone,
   };
 };
