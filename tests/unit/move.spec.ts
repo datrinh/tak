@@ -114,4 +114,52 @@ describe('Stone Movement Logic', () => {
     ];
     expect(expectedBoard).toEqual(boardAfterMove);
   });
+
+  it('cannot move onto a standing stone as normal stone', () => {
+    const { createBoard, moveStones } = useBoard();
+    const emptyBoard = createBoard();
+    const testField: Stone[] = [
+      { player: 2, type: 'FLAT' },
+      { player: 1, type: 'STANDING' },
+    ];
+    const flatStones: Stone[] = [
+      { player: 1, type: 'FLAT' },
+      { player: 2, type: 'FLAT' },
+    ];
+    emptyBoard[0][0] = testField;
+    emptyBoard[0][1] = flatStones;
+
+    expect(() => moveStones(emptyBoard, { x: 1, y: 0 }, { x: 0, y: 0 })).toThrow();
+  });
+
+  it('can flatten as cap stone', () => {
+    const { createBoard, moveStones } = useBoard();
+    const emptyBoard = createBoard();
+    const testField: Stone[] = [
+      { player: 2, type: 'FLAT' },
+      { player: 1, type: 'STANDING' },
+    ];
+    const capStoneFile: Stone[] = [
+      { player: 1, type: 'FLAT' },
+      { player: 2, type: 'CAP' },
+    ];
+    emptyBoard[0][0] = testField;
+    emptyBoard[0][1] = capStoneFile;
+
+    const newBoard = moveStones(emptyBoard, { x: 1, y: 0 }, { x: 0, y: 0 });
+
+    const expectedTestField: Stone[] = [
+      { player: 2, type: 'FLAT' },
+      { player: 1, type: 'FLAT' },
+      { player: 2, type: 'CAP' },
+    ];
+    const expectedBoard: Board = [
+      [expectedTestField, [{ player: 1, type: 'FLAT' }], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
+      [[], [], [], [], []],
+    ];
+    expect(newBoard).toEqual(expectedBoard);
+  });
 });
