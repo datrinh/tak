@@ -1,5 +1,5 @@
 import { cloneDeep } from 'lodash';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 type StoneType = 'STANDING' | 'FLAT' | 'CAP'
 
@@ -21,6 +21,13 @@ const EMPTY_FIELD: Stone[] = [];
 
 export const useBoard = () => {
   const activePlayer = ref(1);
+  const gameEnded = ref(false);
+
+  const getStoneCount = (board: Board, player: number, type: StoneType) => board
+    .flat(2)
+    .filter((field) => field.player === player && field.type === type).length;
+
+  const isGameDone = (board: Board) => false;
 
   const createBoard = (rowCount = DEFAULT_ROWS, colCount = DEFAULT_COLS): Board => {
     const newBoard = [];
@@ -59,6 +66,9 @@ export const useBoard = () => {
     }
     if (board[pos.y][pos.x].length > 0) {
       throw Error('FIELD_ALREADY_OCCUPIED');
+    }
+    if (type === 'CAP' && getStoneCount(board, activePlayer.value, 'CAP') > 0) {
+      throw Error('MAX_1_CAP_STONE');
     }
 
     const newBoard = addStones(board, pos, [{ type, player: activePlayer.value }]);
@@ -148,6 +158,10 @@ export const useBoard = () => {
 
     activePlayer.value = switchPlayer(activePlayer.value);
 
+    if (isGameDone(tempBoard)) {
+      gameEnded.value = true;
+    }
+
     return tempBoard;
   };
 
@@ -157,5 +171,6 @@ export const useBoard = () => {
     moveStones,
     placeNewStone,
     getTopStone,
+    getStoneCount,
   };
 };
