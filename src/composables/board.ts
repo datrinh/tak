@@ -126,6 +126,11 @@ export const useBoard = () => {
     if (isFieldEmpty(board, from)) {
       throw new Error('CANT_MOVE_FROM_EMPTY');
     }
+    if (getTopStone(board, from).player !== activePlayer.value) {
+      // console.log('getTopStone(board, from).player', getTopStone(board, from).player);
+      // console.log('activePlayer.value', activePlayer.value);
+      throw new Error('CANNOT_MOVE_OPPONENT_STONE');
+    }
     if (!isAllowedByDistance(from, to)) {
       throw new Error('MAX_ONE_STEP');
     }

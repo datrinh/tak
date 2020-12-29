@@ -2,12 +2,12 @@ import { Board, Stone, useBoard } from '@/composables/board';
 
 describe('Stone Movement Logic', () => {
   it('moves stone from 0x0 to free 0x1', () => {
-    const { createBoard, placeNewStone, moveStones } = useBoard();
-    const emptyBoard = createBoard();
+    const { createBoard, moveStones } = useBoard();
+    let board = createBoard();
     const newStone: Stone = { player: 1, type: 'CAP' };
-    const updatedBoard = placeNewStone(emptyBoard, { x: 0, y: 0 }, newStone.type);
+    board[0][0] = [newStone];
 
-    const boardAfterMove = moveStones(updatedBoard, { x: 0, y: 0 }, { x: 0, y: 1 });
+    board = moveStones(board, { x: 0, y: 0 }, { x: 0, y: 1 });
 
     const expectedBoard: Board = [
       [[], [], [], [], []],
@@ -16,16 +16,16 @@ describe('Stone Movement Logic', () => {
       [[], [], [], [], []],
       [[], [], [], [], []],
     ];
-    expect(expectedBoard).toEqual(boardAfterMove);
+    expect(board).toEqual(expectedBoard);
   });
 
   it('moves stone from 1x1 to free 1x0', () => {
-    const { createBoard, placeNewStone, moveStones } = useBoard();
-    const emptyBoard = createBoard();
+    const { createBoard, moveStones } = useBoard();
+    let board = createBoard();
     const newStone: Stone = { player: 1, type: 'CAP' };
-    const updatedBoard = placeNewStone(emptyBoard, { x: 1, y: 1 }, newStone.type);
+    board[1][1] = [newStone];
 
-    const boardAfterMove = moveStones(updatedBoard, { x: 1, y: 1 }, { x: 1, y: 0 });
+    board = moveStones(board, { x: 1, y: 1 }, { x: 1, y: 0 });
 
     const expectedBoard: Board = [
       [[], [newStone], [], [], []],
@@ -34,24 +34,22 @@ describe('Stone Movement Logic', () => {
       [[], [], [], [], []],
       [[], [], [], [], []],
     ];
-    expect(expectedBoard).toEqual(boardAfterMove);
+    expect(board).toEqual(expectedBoard);
   });
 
   it('cannot move more than 1 field', () => {
     const { createBoard, placeNewStone, moveStones } = useBoard();
-    const emptyBoard = createBoard();
+    let board = createBoard();
     const newStone: Stone = { player: 1, type: 'CAP' };
-    const updatedBoard = placeNewStone(emptyBoard, { x: 1, y: 1 }, newStone.type);
+    board = placeNewStone(board, { x: 1, y: 1 }, newStone.type);
 
-    expect(() => moveStones(updatedBoard, { x: 1, y: 1 }, { x: 2, y: 2 })).toThrow();
-    expect(() => moveStones(updatedBoard, { x: 1, y: 1 }, { x: 1, y: 3 })).toThrow();
-    expect(() => moveStones(updatedBoard, { x: 1, y: 1 }, { x: 0, y: 1 })).not.toThrow();
-    expect(() => moveStones(updatedBoard, { x: 1, y: 1 }, { x: 1, y: 2 })).not.toThrow();
+    expect(() => moveStones(board, { x: 1, y: 1 }, { x: 2, y: 2 })).toThrow();
+    expect(() => moveStones(board, { x: 1, y: 1 }, { x: 1, y: 3 })).toThrow();
   });
 
   it('moves top stone from a stack', () => {
     const { createBoard, moveStones } = useBoard();
-    const board = createBoard();
+    let board = createBoard();
     const testStack: Stone[] = [
       { player: 1, type: 'FLAT' },
       { player: 2, type: 'FLAT' },
@@ -59,7 +57,7 @@ describe('Stone Movement Logic', () => {
     ];
     board[0][0] = testStack;
 
-    const boardAfterMove = moveStones(board, { x: 0, y: 0 }, { x: 0, y: 1 });
+    board = moveStones(board, { x: 0, y: 0 }, { x: 0, y: 1 });
 
     const stonesMoved: Stone[] = [
       { player: 1, type: 'FLAT' },
@@ -75,12 +73,12 @@ describe('Stone Movement Logic', () => {
       [[], [], [], [], []],
       [[], [], [], [], []],
     ];
-    expect(expectedBoard).toEqual(boardAfterMove);
+    expect(board).toEqual(expectedBoard);
   });
 
   it('moves a stack correctly', () => {
     const { createBoard, moveStones } = useBoard();
-    const board = createBoard();
+    let board = createBoard();
     const testStack: Stone[] = [
       { player: 1, type: 'FLAT' },
       { player: 2, type: 'FLAT' },
@@ -92,7 +90,7 @@ describe('Stone Movement Logic', () => {
     ];
     board[0][0] = testStack;
 
-    const boardAfterMove = moveStones(board, { x: 0, y: 0 }, { x: 0, y: 1 }, 3);
+    board = moveStones(board, { x: 0, y: 0 }, { x: 0, y: 1 }, 3);
 
     const stonesMoved: Stone[] = [
       { player: 1, type: 'FLAT' },
@@ -112,49 +110,51 @@ describe('Stone Movement Logic', () => {
       [[], [], [], [], []],
       [[], [], [], [], []],
     ];
-    expect(expectedBoard).toEqual(boardAfterMove);
+    expect(board).toEqual(expectedBoard);
   });
 
   it('cannot move onto a standing stone as normal stone', () => {
-    const { createBoard, moveStones } = useBoard();
-    const emptyBoard = createBoard();
+    const {
+      createBoard, moveStones,
+    } = useBoard();
+    const board = createBoard();
     const testField: Stone[] = [
-      { player: 2, type: 'FLAT' },
-      { player: 1, type: 'STANDING' },
+      { player: 1, type: 'FLAT' },
+      { player: 2, type: 'STANDING' },
     ];
     const flatStones: Stone[] = [
-      { player: 1, type: 'FLAT' },
       { player: 2, type: 'FLAT' },
+      { player: 1, type: 'FLAT' },
     ];
-    emptyBoard[0][0] = testField;
-    emptyBoard[0][1] = flatStones;
+    board[0][0] = testField;
+    board[0][1] = flatStones;
 
-    expect(() => moveStones(emptyBoard, { x: 1, y: 0 }, { x: 0, y: 0 })).toThrow();
+    expect(() => moveStones(board, { x: 1, y: 0 }, { x: 0, y: 0 })).toThrow();
   });
 
   it('can flatten as cap stone', () => {
     const { createBoard, moveStones } = useBoard();
-    const emptyBoard = createBoard();
+    const board = createBoard();
     const testField: Stone[] = [
-      { player: 2, type: 'FLAT' },
-      { player: 1, type: 'STANDING' },
+      { player: 1, type: 'FLAT' },
+      { player: 2, type: 'STANDING' },
     ];
     const capStoneField: Stone[] = [
-      { player: 1, type: 'FLAT' },
-      { player: 2, type: 'CAP' },
+      { player: 2, type: 'FLAT' },
+      { player: 1, type: 'CAP' },
     ];
-    emptyBoard[0][0] = testField;
-    emptyBoard[0][1] = capStoneField;
+    board[0][0] = testField;
+    board[0][1] = capStoneField;
 
-    const newBoard = moveStones(emptyBoard, { x: 1, y: 0 }, { x: 0, y: 0 });
+    const newBoard = moveStones(board, { x: 1, y: 0 }, { x: 0, y: 0 });
 
     const expectedTestField: Stone[] = [
-      { player: 2, type: 'FLAT' },
       { player: 1, type: 'FLAT' },
-      { player: 2, type: 'CAP' },
+      { player: 2, type: 'FLAT' },
+      { player: 1, type: 'CAP' },
     ];
     const expectedBoard: Board = [
-      [expectedTestField, [{ player: 1, type: 'FLAT' }], [], [], []],
+      [expectedTestField, [{ player: 2, type: 'FLAT' }], [], [], []],
       [[], [], [], [], []],
       [[], [], [], [], []],
       [[], [], [], [], []],
@@ -165,7 +165,7 @@ describe('Stone Movement Logic', () => {
 
   it('cannot flatten with cap when moving stack', () => {
     const { createBoard, moveStones } = useBoard();
-    const emptyBoard = createBoard();
+    const board = createBoard();
     const testField: Stone[] = [
       { player: 2, type: 'FLAT' },
       { player: 1, type: 'STANDING' },
@@ -176,10 +176,10 @@ describe('Stone Movement Logic', () => {
       { player: 1, type: 'FLAT' },
       { player: 2, type: 'CAP' },
     ];
-    emptyBoard[0][0] = testField;
-    emptyBoard[0][1] = capStoneField;
+    board[0][0] = testField;
+    board[0][1] = capStoneField;
 
-    expect(() => moveStones(emptyBoard, { x: 1, y: 0 }, { x: 0, y: 0 }, 3)).toThrow();
+    expect(() => moveStones(board, { x: 1, y: 0 }, { x: 0, y: 0 }, 3)).toThrow();
   });
 
   it('switches players after moving stones', () => {
@@ -196,5 +196,17 @@ describe('Stone Movement Logic', () => {
 
     board = moveStones(board, { x: 1, y: 0 }, { x: 1, y: 1 });
     expect(activePlayer.value).toBe(1);
+  });
+
+  it('can only move stacks that belong to player', () => {
+    const {
+      createBoard, moveStones, placeNewStone, activePlayer,
+    } = useBoard();
+    let board = createBoard();
+    board = placeNewStone(board, { x: 0, y: 0 }, 'FLAT');
+    board = placeNewStone(board, { x: 1, y: 0 }, 'FLAT');
+    expect(activePlayer.value).toBe(1);
+
+    expect(() => moveStones(board, { x: 1, y: 0 }, { x: 1, y: 1 })).toThrow();
   });
 });
