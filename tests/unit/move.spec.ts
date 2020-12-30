@@ -209,4 +209,34 @@ describe('Stone Movement Logic', () => {
 
     expect(() => moveStones(board, { x: 1, y: 0 }, { x: 1, y: 1 })).toThrow();
   });
+
+  it('does not end game without a street', () => {
+    const {
+      createBoard, placeNewStone, isGameDone, moveStones,
+    } = useBoard();
+    let board = createBoard();
+
+    board = placeNewStone(board, { x: 0, y: 0 }, 'FLAT');
+    board = placeNewStone(board, { x: 0, y: 1 }, 'FLAT');
+    board = moveStones(board, { x: 0, y: 0 }, { x: 1, y: 0 });
+    board = moveStones(board, { x: 0, y: 1 }, { x: 1, y: 1 });
+
+    expect(isGameDone.value).toBe(false);
+  });
+
+  it('ends the game once a player has a street', () => {
+    const { createBoard, moveStones, isGameDone } = useBoard();
+    let board = createBoard();
+    const stone: Stone[] = [{ player: 1, type: 'FLAT' }];
+    board[0][0] = stone;
+    board[1][0] = stone;
+    board[2][0] = stone;
+    board[3][0] = stone;
+    board[4][1] = stone;
+    expect(isGameDone.value).toBe(false);
+
+    board = moveStones(board, { x: 1, y: 4 }, { x: 0, y: 4 });
+
+    expect(isGameDone.value).toBe(true);
+  });
 });

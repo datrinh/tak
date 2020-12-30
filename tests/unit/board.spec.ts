@@ -1,4 +1,4 @@
-import { useBoard } from '@/composables/board';
+import { Stone, useBoard } from '@/composables/board';
 
 describe('Board Creation Logic', () => {
   it('creates a valid default board', () => {
@@ -41,12 +41,5 @@ describe('Board Creation Logic', () => {
       [[], [], [], []],
     ];
     expect(board).toEqual(expectedBoard);
-  });
-
-  it('ends the game once player 1 has a street', () => {
-    const { createBoard } = useBoard();
-    const board = createBoard();
-
-    // TODO
   });
 });

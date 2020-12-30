@@ -1,5 +1,5 @@
-import { cloneDeep } from 'lodash';
-import { computed, ref } from 'vue';
+import { cloneDeep, find } from 'lodash';
+import { ref } from 'vue';
 
 type StoneType = 'STANDING' | 'FLAT' | 'CAP'
 
@@ -21,13 +21,139 @@ const EMPTY_FIELD: Stone[] = [];
 
 export const useBoard = () => {
   const activePlayer = ref(1);
-  const gameEnded = ref(false);
+  const isGameDone = ref(false);
+
+  const isFieldEmpty = (board: Board, pos: Position) => board[pos.y][pos.x].length === 0;
+
+  const getTopStone = (
+    board: Board, pos: Position,
+  ) => board[pos.y]?.[pos.x]?.[board[pos.y][pos.x]?.length - 1];
 
   const getStoneCount = (board: Board, player: number, type: StoneType) => board
     .flat(2)
     .filter((field) => field.player === player && field.type === type).length;
 
-  const isGameDone = (board: Board) => false;
+  const flattenBoard = (board: Board): Board => board
+    .map((row, y) => row
+      .map((stone, x) => (stone.length > 0 ? [getTopStone(board, { x, y })] : [])));
+
+  const filterOutStanding = (board: Board): Board => board
+    .map((row) => row.filter((stone) => stone[0]?.type !== 'STANDING'));
+
+  const isOnEdge = (board: Board, pos: Position): boolean => pos.x === 0
+    || pos.y === 0
+    || pos.x === board.length - 1
+    || pos.y === board.length - 1;
+
+  const isOppositeEdge = (board: Board, from: Position, to: Position): boolean => {
+    const size = board.length - 1;
+    if (!isOnEdge(board, from) || !isOnEdge(board, to)) {
+      return false;
+    }
+    if (from.x === 0 && from.y === 0) {
+      return to.x === size || to.y === size;
+    }
+    if (from.x === 0) {
+      return to.x === size;
+    }
+    if (from.y === 0) {
+      return to.y === size;
+    }
+    if (from.x === size) {
+      return to.x === 0;
+    }
+    if (from.y === size) {
+      return to.y === 0;
+    }
+
+    return false;
+  };
+
+  const getPlayersNeighborsForPosition = (board: Board, pos: Position): Position[] => {
+    const { player } = getTopStone(board, pos);
+    const neighbors: Position[] = [];
+
+    if (getTopStone(board, { ...pos, x: pos.x + 1 })?.player === player) {
+      neighbors.push({ ...pos, x: pos.x + 1 });
+    }
+    if (getTopStone(board, { ...pos, x: pos.x - 1 })?.player === player) {
+      neighbors.push({ ...pos, x: pos.x - 1 });
+    }
+    if (getTopStone(board, { ...pos, y: pos.y + 1 })?.player === player) {
+      neighbors.push({ ...pos, y: pos.y + 1 });
+    }
+    if (getTopStone(board, { ...pos, y: pos.y - 1 })?.player === player) {
+      neighbors.push({ ...pos, y: pos.y - 1 });
+    }
+
+    return neighbors;
+  };
+
+  const findStartingField = (board: Board) => {
+    for (let y = 0; y < board.length; y += 1) {
+      for (let x = 0; x < board.length; x += 1) {
+        if (board[y][x].length > 0) {
+          return [x, y];
+        }
+      }
+    }
+  };
+
+  const hasStreet = (board: Board) => {
+    const tooLittleStoneCount = getStoneCount(board, 1, 'FLAT') < DEFAULT_ROWS - 1
+      && getStoneCount(board, 2, 'FLAT') < DEFAULT_ROWS - 1;
+    if (tooLittleStoneCount) {
+      return false;
+    }
+
+    const flatBoard = flattenBoard(board);
+    const cleanBoard = filterOutStanding(flatBoard);
+
+    const onlyEdgeStones = cleanBoard.map((row, y) => row
+      .map((stone, x) => (isOnEdge(board, { x, y }) ? stone : [])));
+
+    const startingPosition = findStartingField(onlyEdgeStones);
+    if (!startingPosition) {
+      return false;
+    }
+
+    const stack = new Set([startingPosition.toString()]);
+    const visited = new Set<string>();
+
+    let result;
+
+    visited.add(startingPosition.toString());
+
+    for (let y = 0; y < onlyEdgeStones.length; y += 1) {
+      for (let x = 0; x < onlyEdgeStones.length; x += 1) {
+        if (onlyEdgeStones[y][x].length === 0) {
+          break;
+        }
+
+        while (stack.size > 0 && !result) {
+          const next = Array.from(stack).pop() as string;
+          const [targetX, targetY] = next.split(',').map((i) => parseFloat(i));
+          const target = { x: targetX, y: targetY };
+          stack.delete(next);
+
+          if (isOppositeEdge(cleanBoard, { x, y }, target)) {
+            result = target;
+            break;
+          }
+
+          getPlayersNeighborsForPosition(cleanBoard, target)
+            .map((entry) => `${entry.x},${entry.y}`)
+            .filter((entry) => !visited.has(entry))
+            .forEach((neighbor) => {
+              visited.add(neighbor);
+              stack.add(neighbor);
+            });
+        }
+      }
+    }
+
+    return result;
+  };
 
   const createBoard = (rowCount = DEFAULT_ROWS, colCount = DEFAULT_COLS): Board => {
     const newBoard = [];
@@ -52,12 +178,6 @@ export const useBoard = () => {
     return isInsideBoundaries && isPositionPositive;
   };
 
-  const isFieldEmpty = (board: Board, pos: Position) => board[pos.y][pos.x].length === 0;
-
-  const getTopStone = (
-    board: Board, pos: Position,
-  ) => board[pos.y][pos.x][board[pos.y][pos.x].length - 1];
-
   const switchPlayer = (player: number) => (player === 1 ? 2 : 1);
 
   const placeNewStone = (board: Board, pos: Position, type: StoneType): Board => {
@@ -73,6 +193,10 @@ export const useBoard = () => {
 
     const newBoard = addStones(board, pos, [{ type, player: activePlayer.value }]);
     activePlayer.value = switchPlayer(activePlayer.value);
+
+    if (hasStreet(newBoard)) {
+      isGameDone.value = true;
+    }
 
     return newBoard;
   };
@@ -137,8 +261,6 @@ export const useBoard = () => {
       throw new Error('CANT_MOVE_FROM_EMPTY');
     }
     if (getTopStone(board, from).player !== activePlayer.value) {
-      // console.log('getTopStone(board, from).player', getTopStone(board, from).player);
-      // console.log('activePlayer.value', activePlayer.value);
       throw new Error('CANNOT_MOVE_OPPONENT_STONE');
     }
     if (!isAllowedByDistance(from, to)) {
@@ -158,8 +280,8 @@ export const useBoard = () => {
 
     activePlayer.value = switchPlayer(activePlayer.value);
 
-    if (isGameDone(tempBoard)) {
-      gameEnded.value = true;
+    if (hasStreet(tempBoard)) {
+      isGameDone.value = true;
     }
 
     return tempBoard;
@@ -167,6 +289,7 @@ export const useBoard = () => {
 
   return {
     activePlayer,
+    isGameDone,
     createBoard,
     moveStones,
     placeNewStone,

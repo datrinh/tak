@@ -93,7 +93,7 @@ describe('Stone Placement Logic', () => {
     expect(activePlayer.value).toBe(2);
   });
 
-  it('cannot place more than 1 cap stone for 1 player', () => {
+  it('cannot place more than 1 cap stone for player 1', () => {
     const { createBoard, placeNewStone } = useBoard();
     let board = createBoard();
 
@@ -101,5 +101,40 @@ describe('Stone Placement Logic', () => {
     board = placeNewStone(board, { x: 4, y: 4 }, 'CAP');
 
     expect(() => placeNewStone(board, { x: 1, y: 0 }, 'CAP')).toThrow();
+  });
+
+  it('cannot place more than 1 cap stone for player 2', () => {
+    const { createBoard, placeNewStone } = useBoard();
+    let board = createBoard();
+
+    board = placeNewStone(board, { x: 0, y: 0 }, 'CAP');
+    board = placeNewStone(board, { x: 4, y: 4 }, 'CAP');
+    board = placeNewStone(board, { x: 1, y: 0 }, 'FLAT');
+
+    expect(() => placeNewStone(board, { x: 0, y: 1 }, 'CAP')).toThrow();
+  });
+
+  it('does not end game without a street', () => {
+    const { createBoard, placeNewStone, isGameDone } = useBoard();
+    let board = createBoard();
+
+    board = placeNewStone(board, { x: 0, y: 0 }, 'FLAT');
+    board = placeNewStone(board, { x: 0, y: 1 }, 'FLAT');
+
+    expect(isGameDone.value).toBe(false);
+  });
+
+  it('ends the game once player 1 has a street', () => {
+    const { createBoard, placeNewStone, isGameDone } = useBoard();
+    let board = createBoard();
+    const stone: Stone[] = [{ player: 1, type: 'FLAT' }];
+    board[0][0] = stone;
+    board[1][0] = stone;
+    board[2][0] = stone;
+    board[3][0] = stone;
+
+    board = placeNewStone(board, { x: 0, y: 4 }, 'FLAT');
+
+    expect(isGameDone.value).toBe(true);
   });
 });
