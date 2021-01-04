@@ -1,4 +1,4 @@
-import { cloneDeep, find } from 'lodash';
+import { cloneDeep } from 'lodash';
 import { ref } from 'vue';
 
 type StoneType = 'STANDING' | 'FLAT' | 'CAP'
